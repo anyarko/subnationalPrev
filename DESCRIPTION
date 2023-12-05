@@ -1,0 +1,42 @@
+Package: subnationalPrev
+Title: Subnational Prevalence Estimation
+Version: 1.0
+Authors@R: c(
+    person(given = "Albert", 
+           family = "Nyarko-Agyei", 
+           role = c("aut", "cre"),
+           email = "albert.nyarko-agyei@nottingham.ac.uk", 
+           comment = c(ORCID = "0000-0003-2222-7567")),
+    person(given = "Scott",
+           family = "Moser",
+           role = c("aut"),
+           email = "scott.moser@nottingham.ac.uk"),
+    person(given = "Rowland",
+           family = "Seymour",
+           role = c("aut"),
+           email = "r.g.Seymour@bham.ac.uk",
+           comment = c(ORCID = "0000-0002-8739-3921")))
+Description: Generate spatial estimates of the pervalence of a characteristic from ARD
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Biarch: true
+Depends: 
+    R (>= 3.4.0)
+Imports: 
+    methods,
+    Rcpp (>= 0.12.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.3.1.1)
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
+SystemRequirements: GNU make
+URL: https://github.com/anyarko/subnationalPrev
+BugReports: https://github.com/anyarko/subnationalPrev/issues
