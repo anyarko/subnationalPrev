@@ -16,7 +16,7 @@ Authors@R: c(
            role = c("aut"),
            email = "r.g.Seymour@bham.ac.uk",
            comment = c(ORCID = "0000-0002-8739-3921")))
-Description: Generate spatial estimates of the pervalence of a characteristic from ARD
+Description: Generate spatial estimates of the prevalence of characteristics from ARD.
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
