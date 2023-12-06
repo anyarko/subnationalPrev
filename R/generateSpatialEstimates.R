@@ -37,7 +37,7 @@ generate.spatial.estimates <- function(params, population.names, unknown.indices
   
   estimated.sizes <- matrix(0, nrow = num.groups, ncol = length(population.names))
   for(group in 1:nrow(estimated.sizes)){
-    after.warmup.rho_j <- params$rho_j[, group , ] %>% as.data.frame 
+    after.warmup.rho_j <- as.data.frame(params$rho_j[, group , ])
     population.size <- group.info[group, {{pop.col.name}}]
     known.population.names <- population.names[-{{unknown.indices}}]
 
@@ -47,13 +47,13 @@ generate.spatial.estimates <- function(params, population.names, unknown.indices
                       raw.known.sizes,
                       population.size) -> after.warmup.rho.scaled
 
-    mean.rho <- after.warmup.rho.scaled %>% colMeans(na.rm=T)
-    estimated <- (exp(mean.rho)*population.size) %>% round
+    mean.rho <- colMeans(after.warmup.rho.scaled, na.rm=T)
+    estimated <- round(exp(mean.rho)*population.size)
 
     estimated.sizes[group, ] <- estimated
   }
 
-  estimated.sizes <- estimated.sizes %>% as.data.frame
+  estimated.sizes <- as.data.frame(estimated.sizes)
   colnames(estimated.sizes) <- population.names
   return(estimated.sizes)
 }
