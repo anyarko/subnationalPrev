@@ -6,11 +6,12 @@
 #' @param grouping vector of group for each respondent
 #' @param num.iterations number of iterations to run
 #' @param num.chains number of chains to run
-#' @param num.cores number of cores to use
-#' @param seed random seed
+#' @param pars parameters to save. only extract necessary rho_j and L by default
+#' @param ... additional arguments to pass to stan like seed, cores, messages, etc.
 #' @return posterior samples of rho and L
 #' 
-run.sampling <- function(ard, pop.sub.regions, grouping, num.iterations, num.cores, num.chains, seed){
+run.sampling <- function(ard, pop.sub.regions, grouping, num.iterations, 
+                         num.chains, pars=c('rho_j', 'L'), ...){
     num.respondents <- nrow(ard)
     num.populations <- ncol(ard)
     num.subregions <- length(unique(grouping))
@@ -26,7 +27,6 @@ run.sampling <- function(ard, pop.sub.regions, grouping, num.iterations, num.cor
 
     stan.model <- stanmodels$corr_neg_binomial_partial_pooling
     fit <- sampling(stan.model, data = data, iter = num.iterations, 
-                    chains = num.chains, cores = num.cores, seed=seed, pars=c('rho_j', 'L'), 
-                    verbose=F, show_messages=F)
+                    chains = num.chains, pars=pars, ...)
     return(fit)
 }
