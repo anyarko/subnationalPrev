@@ -9,9 +9,9 @@ run.sampling(
   pop.sub.regions,
   grouping,
   num.iterations,
-  num.cores,
   num.chains,
-  seed
+  pars = c("rho_j", "L"),
+  ...
 )
 }
 \arguments{
@@ -23,11 +23,11 @@ run.sampling(
 
 \item{num.iterations}{number of iterations to run}
 
-\item{num.cores}{number of cores to use}
-
 \item{num.chains}{number of chains to run}
 
-\item{seed}{random seed}
+\item{pars}{parameters to save. only extract necessary rho_j and L by default}
+
+\item{...}{additional arguments to pass to stan like seed, cores, messages, etc.}
 }
 \value{
 posterior samples of rho and L
