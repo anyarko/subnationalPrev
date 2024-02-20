@@ -7,16 +7,16 @@
 correlatedScaling(rho, correlation, raw_known_sizes, population_size)
 }
 \arguments{
-\item{rho}{matrix from posterior samples}
+\item{rho}{matrix from posterior samples of rho_j}
 
-\item{correlation}{matrix from posterior samples}
+\item{correlation}{matrix from posterior samples of L}
 
 \item{raw_known_sizes}{vector of prior known group sizes for subregion}
 
 \item{population_size}{total population size for subregion}
 }
 \value{
-data frame of estimates of known group sizes
+matrix of scaled posterior samples of rho_j
 }
 \description{
 Function to scale posterior samples of rho by prior known group sizes

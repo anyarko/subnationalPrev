@@ -2,7 +2,7 @@
 #' 
 #' @export
 #' @param params posterior samples
-#' @return a matrix of average correlations between groups extracted from L
+#' @return a matrix of the correlation between groups at each iteration
 #' 
 compute.correlation.samples <- function(params){
     L <- params$L

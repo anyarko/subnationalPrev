@@ -10,7 +10,7 @@ compute.correlation.samples(params)
 \item{params}{posterior samples}
 }
 \value{
-a matrix of average correlations between groups extracted from L
+a matrix of the correlation between groups at each iteration
 }
 \description{
 Function to calculate the average correlation between groups
