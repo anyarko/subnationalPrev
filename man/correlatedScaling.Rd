@@ -7,7 +7,7 @@
 correlatedScaling(rho, correlation, raw_known_sizes, population_size)
 }
 \arguments{
-\item{rho}{matrix from posterior samples of rho_j}
+\item{rho}{negative of matrix of posterior samples of rho_j}
 
 \item{correlation}{matrix from posterior samples of L}
 

@@ -1,7 +1,7 @@
 #' Function to scale posterior samples of rho by prior known group sizes
 #'
 #' @export
-#' @param rho matrix from posterior samples of rho_j
+#' @param rho negative of matrix of posterior samples of rho_j
 #' @param correlation matrix from posterior samples of L
 #' @param raw_known_sizes vector of prior known group sizes for subregion
 #' @param population_size total population size for subregion
