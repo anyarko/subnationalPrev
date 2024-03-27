@@ -7,14 +7,14 @@ options(scipen=999)
 all.seeds <- c(355, 192, 77)
 
 source('utils.r')
-model <- stan_model('inst/stan/speed/corr_neg_binomial_partial_pooling.stan')
+model <- stan_model('inst/stan/speed_corr_neg_binomial_partial_pooling.stan')
 
 # for(s in 1:20){
 # all.seeds <- c(355+s, 192+s, 77+s)
 # generate_group_sizes
 set.seed(all.seeds[1])
 
-w <- c(30, 30, 30, 30, 0.01, 0.01)
+w <- c(20, 20, 20, 20, 0.1, 0.1)
 mu.rho <- c(2.5, 3.5, 4.5, 5, 5.5, 6.5)
 num.subpopulations <- length(mu.rho)
 sigma.rho <- rep(1, num.subpopulations)
