@@ -8,62 +8,62 @@ data {
 }
 
 parameters {
-  array[J] row_vector[K] rho_j;
-  vector[K] mu_rho;
-  vector < lower = 0 > [K] sigma_rho;
-
-  vector[N] delta;
-  real < lower = 0 > sigma_delta;
+  array[J] row_vector < lower = 0 > [K] rho_j;
+  vector < lower = 0 > [K] mu_rho;
+  vector [K] sigma_rho;
+  
+  vector < lower = 0 > [N] delta;
 
   cholesky_factor_corr[K] L;
-  vector[K] tau_n;
+
+  vector [K] tau_n;
 
   matrix[N,K] epsilon;
 
-  vector[K] reciprocal_w;
+  vector < lower = 0 > [K] w;
 }
 
 transformed parameters {
   matrix[N,K] lambda;
-  vector < lower = 0 > [K] w;
+  vector < lower = 0 > [K] shape_rho;
+  vector < lower = 0 > [K] rate_rho;
 
   {
-    for(k in 1:K){
-      w[k] = 1.0 / sqrt(abs(reciprocal_w[k]));
-    }
-
     vector[K] mu;
     vector[K] tau;
+
+    shape_rho = square(mu_rho) ./ square(sigma_rho);
+    rate_rho = mu_rho ./ square(sigma_rho);
     
     mu = log(1.0 ./ sqrt(1.0 + square(tau_n)));
     tau = sqrt(log(1.0 + square(tau_n)));
 
     matrix[N,K] rho;
     for(n in 1:N){
-      rho[n] = rho_j[jj[n]];
+      rho[n] = rho_j[jj[n]] * -1;
     }
-    
-    lambda = exp(rho + rep_matrix(sigma_delta * delta, K) + 
-                  rep_matrix(mu, N)' + (diag_pre_multiply(tau, L) * epsilon')') .* rep_matrix(offset, K);
+
+    lambda = exp(rho - rep_matrix(delta, K) + 
+                  rep_matrix(mu, N)' + 
+                  (diag_pre_multiply(tau, L) * epsilon')') .* rep_matrix(offset, K);                  
   }
 }
 
 model {
-  mu_rho ~ normal(0, 10);
+  mu_rho ~ cauchy(0, 2.5);
   sigma_rho ~ cauchy(0, 2.5);
 
   for(j in 1:J){
-    rho_j[j] ~ normal(mu_rho, sigma_rho);
+    rho_j[j] ~ gamma(shape_rho, rate_rho);
   } 
 
-  sigma_delta ~ cauchy(0, 2.5);
-  delta ~ std_normal();
+  delta ~ weibull(35, 10);
   
   tau_n ~ cauchy(0, 2.5);
 
   to_vector(epsilon) ~ std_normal();
 
-  reciprocal_w ~ std_normal();
+  w ~ cauchy(0, 2.5);
 
   L ~ lkj_corr_cholesky(2);
   
