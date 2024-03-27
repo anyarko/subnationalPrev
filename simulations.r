@@ -76,11 +76,14 @@ for(num.respondents in sim.num.respondents){
 
   params <- extract(fit)
   rho_j <- params$rho_j
+  # comment out if uncorrelated model is running
   correlation <- compute.correlation.samples(params)
 
   for(region in 1:num.regions){
     true.p.k <- all.p.k[region,]
     rho <- rho_j[,region,] * -1
+
+    # remove correlation if uncorrelated model is running
     nb.estimate <- posteriorRhoScaling(rho, 
                       population*all.p.k[region, known.group.indices], 
                       population, correlation)               
