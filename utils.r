@@ -114,7 +114,6 @@ generate.uncorr.nb.ard <- function(num.respondents, num.subpopulations, total.po
     ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
   }
 
-  browser()
   return(ard)
 }
 
@@ -124,7 +123,7 @@ posteriorRhoScaling <- function(rho, raw_known_sizes,
   K <- ncol(rho)
   new_rho <- rho
   known_ind <- which(raw_known_sizes > 0)
-    
+
   for(k in 1:K){
     for(iter in 1:iterations){
       l_known_ind <- setdiff(known_ind, k)
