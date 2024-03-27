@@ -50,9 +50,26 @@ generate.binomial.ard <- function(num.respondents, num.subpopulations, total.pop
   return(ard)
 }
 
+generate.simple.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
+  rho_j <- log(p.k)
+  delta <- rweibull(num.respondents, shape=16, scale=4)
+
+  rho_j <- matrix(rho_j, nrow=num.respondents, 
+                          ncol=num.subpopulations, 
+                          byrow = T)
+  
+  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations))
+  
+  ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)
+  for(respondent in 1:num.respondents){
+    ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
+  }
+  return(ard)
+}
+
 generate.corr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
   rho_j <- log(p.k)
-  delta <- rweibull(num.respondents, shape=35, scale=10)
+  delta <- rweibull(num.respondents, shape=16, scale=4)
 
   tau_n <- rep(0.2, num.subpopulations)
   mu  <- log(1 / sqrt(1 + (tau_n)**2))
@@ -76,16 +93,15 @@ generate.corr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.
   norm.errors <- matrix(rnorm(num.respondents * num.subpopulations, mean=0, sd=1), 
       ncol=num.subpopulations)
 
-  lambda <- exp(rho_j - matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) + 
+  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) + 
               matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) +
-              t(diag(tau) %*% L %*% t(norm.errors))) * total.pop.size
+              t(diag(tau) %*% L %*% t(norm.errors)))
   
 
   ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)      
   for(respondent in 1:num.respondents){
     ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
   }
-       
   return(ard)
 }
 
