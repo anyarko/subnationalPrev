@@ -56,7 +56,7 @@ model {
     epsilon[n] ~ std_normal();
   }
 
-  delta ~ weibull(35, 10);
+  delta ~ weibull(16, 4);
   
   tau_n ~ cauchy(0, 2.5);
 
