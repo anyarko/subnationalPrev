@@ -50,23 +50,6 @@ generate.binomial.ard <- function(num.respondents, num.subpopulations, total.pop
   return(ard)
 }
 
-generate.simple.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
-  rho_j <- log(p.k)
-  delta <- rweibull(num.respondents, shape=16, scale=4)
-
-  rho_j <- matrix(rho_j, nrow=num.respondents, 
-                          ncol=num.subpopulations, 
-                          byrow = T)
-  
-  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations))
-  
-  ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)
-  for(respondent in 1:num.respondents){
-    ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
-  }
-  return(ard)
-}
-
 generate.corr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
   rho_j <- log(p.k)
   delta <- rweibull(num.respondents, shape=16, scale=4)
@@ -107,23 +90,21 @@ generate.corr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.
 
 generate.uncorr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
   rho_j <- log(p.k)
-
-  delta <- rweibull(num.respondents, shape=16, scale=4)
-
-  tau_n <- rep(0.2, num.subpopulations)
+  delta <- rweibull(num.respondents, shape=10, scale=5)
+  
+  tau_n <- c(0.1, 0.1, 0.1, 0.1, 0.3, 0.3)
   mu  <- log(1 / sqrt(1 + (tau_n)**2))
   tau <- sqrt(log(1 + (tau_n)**2))
-  tau  <- matrix(tau, nrow = num.respondents, ncol=num.subpopulations, byrow=T)
 
   rho_j <- matrix(rho_j, nrow=num.respondents, 
                           ncol=num.subpopulations, 
                           byrow = T)
+
   norm.errors <- matrix(rnorm(num.respondents * num.subpopulations, mean=0, sd=1), 
       ncol=num.subpopulations)
-
-  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) + 
-              matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) +
-              (tau * norm.errors))        
+              
+  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) 
+                + matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) + norm.errors %*% diag(tau))
 
   ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)      
   for(respondent in 1:num.respondents){
@@ -145,16 +126,14 @@ posteriorRhoScaling <- function(rho, raw_known_sizes,
       l_known_ind <- setdiff(known_ind, k)
       num_known <- length(l_known_ind)
 
+      known_sizes <- raw_known_sizes[-k]
+      known_sizes <- known_sizes[which(known_sizes > 0)]
+
       if(!is.null(correlation)){
         w <- correlation[iter, k, l_known_ind]
         w[w < 0] <- 0 
         w <- w * ( num_known / sum(w) )
-      }
-      
-      known_sizes <- raw_known_sizes[-k]
-      known_sizes <- known_sizes[which(known_sizes > 0)]
-      
-      if(!is.null(correlation)){
+
         C_m  <- log( (1/(num_known)) * 
                      sum( (exp(rho[iter, l_known_ind]) * w ) / (unlist(known_sizes)/population_size)) )
       }else{
@@ -166,6 +145,7 @@ posteriorRhoScaling <- function(rho, raw_known_sizes,
   }
   return(new_rho)
 }
+
 
 compute.correlation.samples <- function(params){
     L <- params$L
