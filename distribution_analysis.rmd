@@ -1,0 +1,157 @@
+```{r, loading_libs}
+library(dplyr)
+source('utils.r')
+```
+
+
+```{r, generating_gamma_with_specified_mu_sigma}
+mu <- 0.2
+sigma.sq <- 0.01
+
+alpha.rho <- mu*(mu*(1-mu)/sigma.sq - 1)
+beta.rho  <- alpha.rho*(1-mu)/mu
+
+curve(dbeta(x, alpha.rho, beta.rho), 0, 1)
+
+#Gamma
+require(MAnorm2)
+
+mu <- 6.5
+sigma.sq <- 1
+
+alpha.rho <- mu*(mu*(1-mu)/sigma.sq - 1)
+beta.rho  <- alpha.rho*(1-mu)/mu
+ 
+# alpha.rho <- inv.trigamma(sigma.sq)
+# beta.rho  <- exp(mu + digamma(alpha.rho))
+curve(dgamma(x, alpha.rho, beta.rho), 0, 10)
+
+
+
+mu <- 6.5
+sigma.sq <- 2
+
+alpha.rho <- (mu**2)/sigma.sq
+beta.rho <- mu/sigma.sq
+
+curve(dgamma(x, alpha.rho, beta.rho), 0, 10)
+
+display.min.max.probs.gamma(mu, sigma.sq)
+```
+
+```{r, visualing_rho_j_distribution}
+mu <- 6.5
+sigma.sq <- 1
+
+alpha.rho <- (mu**2)/sigma.sq
+beta.rho <- mu/sigma.sq
+
+curve(dgamma(x, alpha.rho, beta.rho), 0, 10)
+
+display.min.max.probs.gamma(mu, sigma.sq)
+```
+
+```{r, visualing_w_distribution}
+mu <- 0.07
+size <- 0.01
+display.counts.negbin(mu, size)
+```
+
+
+```{r, examing_theoretical_distribution}
+num.respondents <- 100
+num.subpopulations <- 6
+total.pop.size <- 1000000
+p.k <- c(0.1, 0.09, 0.08, 0.07, 0.001, 0.001)
+w <- c(40, 40, 40, 40, 0.01, 0.0001)
+
+generate.nb.ard(num.respondents, num.subpopulations, total.pop.size, p.k, w)
+
+rnbinom(1000, mu=0.4, size=0.01) %>% table()
+
+lambda %>% head(40)
+lambda %>% colMeans
+```
+
+```{r, examining half_cauchy}
+abs(rcauchy(10000, 0, 2.5)) %>% hist(breaks=100)
+```
+
+```{r, examining_tau_mu}
+tau_n <- rep(0.2, num.subpopulations)
+tau_n <- c(0.1, 0.1, 0.1, 0.1, 0.5, 0.5)
+mu  <- log(1 / sqrt(1 + (tau_n)**2))
+tau <- sqrt(log(1 + (tau_n)**2))
+mu
+exp(mu[6])
+
+
+tau_n <- c(0.1, 0.2, 0.5, 0.3, 1, 1.2)
+mu  <- log(1 / sqrt(1 + (tau_n)**2))
+tau <- sqrt(log(1 + (tau_n)**2))
+
+num.respondents <- 20
+num.subpopulations <- 6
+norm.errors <- matrix(rnorm(num.respondents * num.subpopulations, mean=0, sd=1), 
+      ncol=num.subpopulations)
+matrix(rep(mu, each=num.respondents), ncol=num.subpopulations)
+norm.errors %*% diag(tau)
+
+a <- matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) + norm.errors %*% diag(tau)
+b <- rep(mu, each=num.respondents) + norm.errors %*% diag(tau)
+all(a == b)
+
+exp(0.47)
+exp(0.41)
+```
+
+```{r, examining_ard}
+num.respondents <- 30
+num.subpopulations <- 6
+total.pop.size <- 1000000
+p.k <- c(0.1, 0.09, 0.08, 0.07, 0.02, 0.01)
+w <- c(20, 20, 20, 20, 0.1, 0.1)
+
+generate.uncorr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
+  rho_j <- log(p.k)
+  delta <- rweibull(num.respondents, shape=10, scale=5)
+
+#   tau_n <- c(0.1, 0.1, 0.1, 0.1, 1, 1)
+  tau_n <- rep(0, num.subpopulations)
+#   tau_n <- c(0.1, 0.1, 0.1, 0.1, 2, 2)
+  mu  <- log(1 / sqrt(1 + (tau_n)**2))
+  tau <- sqrt(log(1 + (tau_n)**2))
+
+  rho_j <- matrix(rho_j, nrow=num.respondents, 
+                          ncol=num.subpopulations, 
+                          byrow = T)
+
+  norm.errors <- matrix(rnorm(num.respondents * num.subpopulations, mean=0, sd=1), 
+      ncol=num.subpopulations)
+              
+  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) 
+                + matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) + norm.errors %*% diag(tau))
+
+  ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)      
+  for(respondent in 1:num.respondents){
+    ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
+  }
+
+  return(ard)
+}
+
+ard <- generate.uncorr.nb.ard(num.respondents, num.subpopulations, total.pop.size, p.k, w)
+ard
+ard %>% colMeans()
+```
+
+```{r, error_calculation}
+mean(abs(exp(mean.estimate[-known.group.indices]) - true.p.k[-known.group.indices]) 
+      / true.p.k[-known.group.indices])
+
+mean(abs(c(0.001, 0.0002) - c(0.0015, 0.0015))
+      / c(0.0015, 0.0015))
+
+
+c(-23, 3, 4) %>% pmin(0)    
+```
