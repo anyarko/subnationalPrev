@@ -7,7 +7,7 @@ data {
 }
 
 parameters {
-  row_vector < lower = 0 > [K] rho_j [N];
+  row_vector < lower = 0 > [K] rho_j [J];
   vector < lower = 0 > [K] mu_rho;
   vector [K] sigma_rho;
   
