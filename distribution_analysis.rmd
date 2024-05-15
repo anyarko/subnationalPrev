@@ -1,12 +1,24 @@
 ```{r, loading_libs}
 library(dplyr)
 source('utils.r')
+
+display.min.max.probs.gamma <- function(mu, sigma){
+  shape.rho <- (mu**2)/(sigma**2)
+  rate.rho <- mu/(sigma**2)
+  print(exp(-rgamma(1000, shape.rho, rate.rho)) %>% min)
+  print(exp(-rgamma(1000, shape.rho, rate.rho)) %>% max)
+}
+
+
+display.counts.negbin <- function(mu, size){
+  print(table(rnbinom(10000, mu=mu, size=size)))
+}
 ```
 
 
 ```{r, generating_gamma_with_specified_mu_sigma}
-mu <- 0.2
-sigma.sq <- 0.01
+mu <-1
+sigma.sq <- 0.1
 
 alpha.rho <- mu*(mu*(1-mu)/sigma.sq - 1)
 beta.rho  <- alpha.rho*(1-mu)/mu
@@ -16,14 +28,12 @@ curve(dbeta(x, alpha.rho, beta.rho), 0, 1)
 #Gamma
 require(MAnorm2)
 
-mu <- 6.5
+mu <- 1
 sigma.sq <- 1
 
 alpha.rho <- mu*(mu*(1-mu)/sigma.sq - 1)
 beta.rho  <- alpha.rho*(1-mu)/mu
  
-# alpha.rho <- inv.trigamma(sigma.sq)
-# beta.rho  <- exp(mu + digamma(alpha.rho))
 curve(dgamma(x, alpha.rho, beta.rho), 0, 10)
 
 
@@ -40,8 +50,8 @@ display.min.max.probs.gamma(mu, sigma.sq)
 ```
 
 ```{r, visualing_rho_j_distribution}
-mu <- 6.5
-sigma.sq <- 1
+mu <- 1
+sigma.sq <- 1/(4-1)
 
 alpha.rho <- (mu**2)/sigma.sq
 beta.rho <- mu/sigma.sq
@@ -110,39 +120,65 @@ num.respondents <- 30
 num.subpopulations <- 6
 total.pop.size <- 1000000
 p.k <- c(0.1, 0.09, 0.08, 0.07, 0.02, 0.01)
-w <- c(20, 20, 20, 20, 0.1, 0.1)
+w <- c(35, 35, 35, 35, 2, 0.3)
 
-generate.uncorr.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
+generate.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k, w){
   rho_j <- log(p.k)
-  delta <- rweibull(num.respondents, shape=10, scale=5)
-
-#   tau_n <- c(0.1, 0.1, 0.1, 0.1, 1, 1)
-  tau_n <- rep(0, num.subpopulations)
-#   tau_n <- c(0.1, 0.1, 0.1, 0.1, 2, 2)
-  mu  <- log(1 / sqrt(1 + (tau_n)**2))
-  tau <- sqrt(log(1 + (tau_n)**2))
+  delta <- rnorm(num.respondents, mean=5.5, sd=1)
 
   rho_j <- matrix(rho_j, nrow=num.respondents, 
                           ncol=num.subpopulations, 
                           byrow = T)
 
-  norm.errors <- matrix(rnorm(num.respondents * num.subpopulations, mean=0, sd=1), 
-      ncol=num.subpopulations)
-              
-  lambda <- exp(rho_j + matrix(rep(delta, times=num.subpopulations), ncol=num.subpopulations) 
-                + matrix(rep(mu, each=num.respondents), ncol=num.subpopulations) + norm.errors %*% diag(tau))
+  lambda <- exp(rho_j + delta)
 
   ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)      
   for(respondent in 1:num.respondents){
     ard[respondent,] <- rnbinom(num.subpopulations, mu=lambda[respondent,], size=w)
   }
-
+  browser()
   return(ard)
 }
 
-ard <- generate.uncorr.nb.ard(num.respondents, num.subpopulations, total.pop.size, p.k, w)
-ard
-ard %>% colMeans()
+nb.ard <- generate.nb.ard(num.respondents, num.subpopulations, total.pop.size, p.k, w)
+
+generate.poisson.ard <- function(num.respondents, num.subpopulations, total.pop.size, p.k){
+  rho_j <- log(p.k)
+  delta <- rnorm(num.respondents, mean=5.5, sd=1)
+
+  rho_j <- matrix(rho_j, nrow=num.respondents, 
+                          ncol=num.subpopulations, 
+                          byrow = T)
+
+  lambda <- exp(rho_j + delta)
+
+  ard <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)
+  for(respondent in 1:num.respondents){
+    ard[respondent,] <- rpois(num.subpopulations, lambda[respondent,])
+  }
+  return(ard)
+}
+
+pois.ard <- generate.poisson.ard(num.respondents, num.subpopulations, total.pop.size, p.k)
+
+calculate.pearson.residuals <- function(ard){
+  num.respondents <- nrow(ard)
+  num.subpopulations <- ncol(ard)
+  ard.mean <- colMeans(ard)
+  ard.sd <- apply(ard, 2, sd)
+  pearson.residuals <- matrix(0, nrow=num.respondents, ncol=num.subpopulations)
+  for(respondent in 1:num.respondents){
+    for(subpopulation in 1:num.subpopulations){
+      pearson.residuals[respondent, subpopulation] <- (ard[respondent, subpopulation] - ard.mean[subpopulation]) / sqrt(ard.mean[subpopulation])
+    }
+  }
+  return(pearson.residuals)
+}
+
+calculate.pearson.residuals(nb.ard)
+calculate.pearson.residuals(pois.ard)
+
+nb.ard
 ```
 
 ```{r, error_calculation}

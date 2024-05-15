@@ -1,9 +1,17 @@
-```{r}
+```{r, load_philipines_fit}
+load(file = here::here("fits", "neg_binomial_73.Rdata"))
+params <- extract(fit)
+```
+
+
+```{r, examine_values_converged_to}
 parameter.names <- dimnames(fit)$parameters
 pars <- parameter.names[grepl('mu_rho', parameter.names)]
 print(fit, pars=pars)
-traceplot(fit, inc_warmup = F, pars = pars) 
-traceplot(fit, inc_warmup = T, pars = pars) 
+traceplot(fit, inc_warmup = F, pars = pars) + 
+scale_color_manual(values = c("blue", "red"))
+traceplot(fit, inc_warmup = T, pars = pars) + 
+scale_color_manual(values = c("blue", "red"))
 
 
 pars <- parameter.names[grepl('w', parameter.names)]
@@ -16,37 +24,47 @@ print(fit, pars=pars)
 traceplot(fit, inc_warmup = F, pars = pars)
 
 
-pars <- parameter.names[grepl('^tau_n', parameter.names)]
+pars <- parameter.names[grepl('^rho_j\\[7,', parameter.names) ]
 print(fit, pars=pars)
-traceplot(fit, inc_warmup = F, pars = pars)
-traceplot(fit, inc_warmup = T, pars = pars) 
+all.p.k[7,] %>% log()
+traceplot(fit, inc_warmup = T, pars = pars)
 
-pars <- parameter.names[grepl('^rho_j\\[1,', parameter.names) ]
+pars <- parameter.names[grepl('^sigma_delta', parameter.names) ]
 print(fit, pars=pars)
-all.p.k[1,] %>% log()
-traceplot(fit, inc_warmup = F, pars = pars)
+traceplot(fit, inc_warmup = T, pars = pars)
 
-correlation <- compute.correlation.samples(params)
-apply(correlation, c(2,3), mean)
 
+
+pars <- parameter.names[grepl('^delta', parameter.names) ]
+print(fit, pars=pars)
+
+
+params$delta %>% colMeans %>% mean
 
 pars <- c('rho_j[83,5]', 'rho_j[83,6]')
 print(fit, pars=pars)
 traceplot(fit, inc_warmup = F, pars = pars)
 
-pars <- c('mu_rho[1]', 'mu_rho[3]', 'sigma_rho[2]', 'rho_j[1,5]')
+pars <- c('mu_rho[1]', 'mu_rho[3]', 'sigma_rho[6]', 'rho_j[7,6]')
 print(fit, pars=pars)
 mu.sigma.j.rho.plot <- traceplot(fit, inc_warmup = F, pars = pars, nrow=1) + theme_bw()
 
+traceplot(fit, inc_warmup = F, pars = pars, nrow=1) + 
+theme_bw() +
+scale_color_manual(values = c("blue", "red"))
+
+traceplot(fit, inc_warmup = F, pars = pars, nrow=1) + 
+scale_color_manual(values = c("blue", "red"))
+
 traceplot(fit, inc_warmup = T, pars = c('mu_rho[1]')) + 
 scale_y_continuous(breaks=seq(2, 3, length.out=9), limits=c(2,3)) + 
-scale_x_continuous(limits=c(100, 300))
+scale_x_continuous(limits=c(200, 300))
 ```
 
 
 ```{r, saving_plots}
-# ggsave('visualisations/traceplot_mu_sigma_j_rho.pdf', 
-#        plot= mu.sigma.j.rho.plot, width=9, height=5, units='in')
+ggsave('traceplot_mu_sigma_j_rho.pdf', 
+       plot= mu.sigma.j.rho.plot, width=9, height=5, units='in')
 
 
 # library(gridExtra)
@@ -79,4 +97,18 @@ for(region in 1:num.regions){
   print(fit, pars=pars)
   print(paste('True prevalence for region', region, 'is', all.p.k[region,] %>% log()))
 }
+```
+
+
+```{r, disperson_of_groups}
+parameter.names <- dimnames(fit)$parameters
+pars <- parameter.names[grepl('w', parameter.names)]
+print(fit, pars=pars)
+traceplot(fit, inc_warmup = F, pars = pars) 
+traceplot(fit, inc_warmup = T, pars = pars) 
+
+pars <- parameter.names[grepl('mu_rho', parameter.names)]
+print(fit, pars=pars)
+traceplot(fit, inc_warmup = F, pars = pars) 
+traceplot(fit, inc_warmup = T, pars = pars) 
 ```

@@ -7,13 +7,13 @@ library(gridExtra)
 options(scipen=999)
 
 source('utils.r')
-model <- stan_model('neg_binomial_partial_pooling.stan')
+model <- stan_model('inst/stan/neg_binomial_partial_pooling.stan')
 ```
 
 ```{r, generate_group_sizes}
 set.seed(2)
 
-w <- c(20, 20, 20, 20, 0.1, 0.1)
+w <- c(35, 35, 35, 35, 2, 0.3)
 mu.rho <- c(2.5, 3.5, 4.5, 5, 5.5, 6.5)
 num.subpopulations <- length(mu.rho)
 sigma.rho <- rep(1, num.subpopulations)
@@ -39,9 +39,7 @@ population <- 1000000
 
 
 ```{r, running_one_set_of_regions}
-num.regions <- 150
-num.respondents <- 50
-
+num.respondents <- 100
 set.seed(71)
 
 spatial.results <- matrix(0, ncol=3) %>% as.data.frame()
@@ -57,24 +55,23 @@ for(region in 1:num.regions){
   # Generate NB data for multiple regions and estimate the prevalence
   # using the NB model and correlated scaling
   p.k <- as.numeric(all.p.k[region, ])
-  nb.ard <- generate.uncorr.nb.ard(num.respondents = num.respondents,
+  nb.ard <- generate.nb.ard(num.respondents = num.respondents,
                             num.subpopulations = length(mu.rho),
                             total.pop.size = population,
                             p.k = p.k,
                             w)   
   ard <- rbind(ard, nb.ard)
 }
-ard <- ard[-1,]
+ard <- ard[-1,] 
 
 data <- list(N = nrow(ard),
               K = ncol(ard),
               y = ard,
-              # offset = rep(population, nrow(ard)),
               J = num.regions, 
               jj = rep(1:num.regions, each=num.respondents))
 
-fit <- sampling(model, data = data, warmup=750,
-        iter = 2000, cores=20,
+fit <- sampling(model, data = data, warmup=200,
+        iter = 300, cores=20,
         chains = 2, seed=920, verbose=F, show_messages=F)
 
 parameter.names <- dimnames(fit)$parameters
@@ -156,7 +153,7 @@ for(num.respondents in sim.num.respondents){
 
   for(region in 1:num.regions){
     p.k <- as.numeric(all.p.k[region, ])
-    nb.ard <- generate.uncorr.nb.ard(num.respondents = num.respondents,
+    nb.ard <- generate.nb.ard(num.respondents = num.respondents,
                               num.subpopulations = length(mu.rho),
                               total.pop.size = population,
                               p.k = p.k,
@@ -256,7 +253,7 @@ for(num.respondents in sim.num.respondents){
 
   for(region in 1:num.regions){
     p.k <- as.numeric(all.p.k[region, ])
-    nb.ard <- generate.uncorr.nb.ard(num.respondents = num.respondents,
+    nb.ard <- generate.nb.ard(num.respondents = num.respondents,
                               num.subpopulations = length(mu.rho),
                               total.pop.size = population,
                               p.k = p.k, 
@@ -331,3 +328,12 @@ for(num.respondents in sim.num.respondents){
 spatial.results <- spatial.results[-1,] %>% mutate_at(vars(-model), as.numeric)
 ```
 
+
+```{r, ukraine_study_data}
+data <- import('UKR2009_scale-up_cl_wei_Feb20_outl_4-6_biggest.sav')
+
+for(col in 1:ncol(data)){
+  print(paste(col, data[,col] %>% attr('label')))
+}
+
+```
