@@ -2,12 +2,12 @@
 
 #include <Rcpp.h>
 using namespace Rcpp ;
-#include "stanExports_corr_neg_binomial_partial_pooling.h"
+#include "stanExports_neg_binomial_partial_pooling.h"
 
-RCPP_MODULE(stan_fit4corr_neg_binomial_partial_pooling_mod) {
+RCPP_MODULE(stan_fit4neg_binomial_partial_pooling_mod) {
 
 
-    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("rstantools_model_corr_neg_binomial_partial_pooling")
+    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("rstantools_model_neg_binomial_partial_pooling")
 
     .constructor<SEXP,SEXP,SEXP>()
 
