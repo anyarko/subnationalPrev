@@ -9,7 +9,7 @@ options(scipen=999)
 source("utils.r")
 
 # to have access to the results folder
-setwd("../")
+setwd("../../")
 ```
 
 ```{r, visualising_saved_results}
