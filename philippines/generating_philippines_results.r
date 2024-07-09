@@ -12,7 +12,7 @@ options(scipen=999)
 suppressPackageStartupMessages(source("utils.R"))
 
 # to have access to the data folder and saved posterior samples
-setwd("../")
+setwd("../../")
 
 # Loading the raw survey data
 survey.org <- import("data/PH2205043401CP_CAM_Full_v1_2023Feb03.csv")

@@ -8,7 +8,7 @@ library(openxlsx)
 suppressPackageStartupMessages(source("utils.R"))
 
 # to have access to the data folder
-setwd("../")
+setwd("../../")
 
 # loading the raw survey data
 survey.org <- import("data/PH2205043401CP_CAM_Full_v1_2023Feb03.csv")
