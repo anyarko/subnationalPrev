@@ -226,32 +226,6 @@ generate.nb.ard <- function(num.respondents, num.subpopulations, total.pop.size,
   return(ard)
 }
 
-
-posteriorRhoScaling <- function(rho, raw_known_sizes,
-                              population_size){
-  iterations <- nrow(rho)
-  K <- ncol(rho)
-  new_rho <- rho
-  known_ind <- which(raw_known_sizes > 0)
-
-  for(k in 1:K){
-    for(iter in 1:iterations){
-      l_known_ind <- setdiff(known_ind, k)
-      num_known <- length(l_known_ind)
-
-      known_sizes <- raw_known_sizes[-k]
-      known_sizes <- known_sizes[which(known_sizes > 0)]
-      
-      C_m  <- log( (1/(num_known)) * 
-                     sum( exp(rho[iter, l_known_ind]) / (unlist(known_sizes)/population_size)) )
-
-      new_rho[iter, k] <- rho[iter, k] - C_m
-    }
-  }
-  return(new_rho)
-}
-
-
 display.error.contributions <- function(all.p.k, num.regions, correlation, 
                                         known.group.indices, population){
   for(region in 1:num.regions){
