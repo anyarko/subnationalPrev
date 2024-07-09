@@ -6,72 +6,75 @@ library(rio)
 library(gridExtra)
 options(scipen=999)
 
-source('utils.r')
+source("utils.r")
+
+# to have access to the results folder
+setwd("../")
 ```
 
 ```{r, visualising_saved_results}
-narrow.degree.prior <- import('results/mu_rho_2.5_6.5_seeds_427_41.csv')
+narrow.degree.prior <- import("results/mu_rho_2.5_6.5_seeds_427_41.csv")
 narrow.degree.prior %>% 
 group_by(model, num_respondents) %>% 
 summarise(mean(mean_error)) #%>% 
-filter(model=='negative_binomial')
+filter(model=="negative_binomial")
 
-wide.degree.prior <- import('results/mu_rho_2.5_6.5_seeds_2_71_920_delta_a_b_cauchy.csv')
+wide.degree.prior <- import("results/mu_rho_2.5_6.5_seeds_2_71_920_delta_a_b_cauchy.csv")
 wide.degree.prior %>%
 group_by(model, num_respondents) %>%
 summarise(mean(mean_error)) #%>%
-filter(model=='negative_binomial')
+filter(model=="negative_binomial")
 
 narrow.boxplot <- narrow.degree.prior %>% 
 ggplot(aes(x=as.factor(num_respondents), y=mean_error, 
-           color=sub('_', ' ', model) %>% str_to_title())) +
+           color=sub("_", " ", model) %>% str_to_title())) +
 geom_boxplot() +
-labs(x='Number of respondents', 
-     y='Mean Absolute Relative Error',
-     color='Model') +
+labs(x="Number of respondents", 
+     y="Mean Absolute Relative Error",
+     color="Model") +
 expand_limits(x=0, y=0) +
 scale_y_continuous(breaks = seq(0, 2, length.out=9), 
                    limits=c(0, 2)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
-theme(legend.position = 'bottom') 
+theme(legend.position = "bottom") 
 
 narrow.scatter <- narrow.degree.prior %>%
 group_by(model, num_respondents) %>%
 summarise(mean_error = mean(mean_error)) %>%
 ggplot(aes(x=num_respondents, y=mean_error, 
-           color=sub('_', ' ', model) %>% str_to_title())) +
+           color=sub("_", " ", model) %>% str_to_title())) +
 geom_point(size=3) +
-labs(x='Number of respondents per region', 
-     y='Mean Absolute Relative Error',
-     color='Model') +
+labs(x="Number of respondents per region", 
+     y="Mean Absolute Relative Error",
+     color="Model") +
 expand_limits(x=0, y=0) +   
 scale_y_continuous(breaks = seq(0, 1.5, length.out=7), limits=c(0, 1.5)) +
 scale_x_continuous(limits = c(0, 100)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
-theme(legend.position = 'bottom')
+theme(legend.position = "bottom")
 
 narrow.boxplot.scatter <- grid.arrange(narrow.boxplot, 
                   narrow.scatter, ncol=2, widths=c(10,8))
 
-# ggsave('visualisations/narrow_degree_prior_boxplot_scatter.pdf', 
-#        plot= narrow.boxplot.scatter, width=9, height=5, units='in')                  
+# ggsave("visualisations/narrow_degree_prior_boxplot_scatter.pdf", 
+#        plot= narrow.boxplot.scatter, width=9, height=5, units="in")                  
 ```
 
 
 ```{r, combining_saved_results_multiple_seeds}
-folder.name <- 'results/old_tau/scott/'
-folder.name <- 'results/delta_10_5/more_respondents/'
-folder.name <- 'results/no_bik/no_scaling/'
-errors.file.names <- list.files(folder.name, pattern='^seeds')
+folder.name <- "results/old_tau/scott/"
+folder.name <- "results/delta_10_5/more_respondents/"
+folder.name <- "results/no_bik/no_scaling/"
+errors.file.names <- list.files(folder.name, pattern="^seeds")
 all.spatial.results <- matrix(0, ncol=4) %>% as.data.frame()
-colnames(all.spatial.results) <- c('num_respondents', 'mean_error', 'model', 'seed')
+colnames(all.spatial.results) <- c("num_respondents", "mean_error", "model", "seed")
 
 for(file in errors.file.names){
-  spatial.results <- import(paste(folder.name, file, sep=''))
-  spatial.results$seed <- as.numeric(str_extract(file, '\\d+'))
-  print(as.numeric(str_extract(file, '\\d+')))
+  spatial.results <- import(paste(folder.name, file, sep=""))
+  spatial.results$seed <- as.numeric(str_extract(file, "\\d+"))
+  print(as.numeric(str_extract(file, "\\d+")))
   all.spatial.results <- rbind(all.spatial.results, spatial.results)
 }
 
@@ -86,58 +89,58 @@ summarise(mean_error = mean(mean_error))
 
 mean.errors %>% 
 ggplot(aes(x=num_respondents, y=mean_error, 
-           color=sub('_', ' ', model))) +
+           color=sub("_", " ", model))) +
 geom_jitter(width=0.1, size=2) +
-labs(x='Number of respondents Per Region', 
-     y='Mean Absolute Relative Error Across Regions',
-     color='Model') +
+labs(x="Number of respondents Per Region", 
+     y="Mean Absolute Relative Error Across Regions",
+     color="Model") +
 expand_limits(x=0, y=0) +   
 scale_y_continuous(breaks = seq(0, 2, length.out=9), limits=c(0, 2)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
-theme(legend.position = 'bottom') -> plot.errors.jitter
+theme(legend.position = "bottom") -> plot.errors.jitter
 
 
 all.spatial.results %>% group_by(seed, model, num_respondents) %>%
 ggplot(aes(x=as.factor(num_respondents), y=mean_error, 
-           color=sub('_', ' ', model))) +
+           color=sub("_", " ", model))) +
 geom_boxplot() +
-labs(x='Number of respondents Per Region', 
-     y='Mean Absolute Relative Error Per Region',
-     color='Model') +
+labs(x="Number of respondents Per Region", 
+     y="Mean Absolute Relative Error Per Region",
+     color="Model") +
 expand_limits(x=0, y=0) +
 scale_y_continuous(breaks = seq(0, 2, length.out=9), 
                    limits=c(0, 2)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
 theme(panel.grid.major.x = element_blank(), 
      panel.grid.minor = element_blank(), 
-     legend.position = 'bottom') -> plot.errors.boxplot
+     legend.position = "bottom") -> plot.errors.boxplot
 
 
 plot.boxplot.jitter.errors <- grid.arrange(plot.errors.boxplot, 
                   plot.errors.jitter, ncol=2, widths=c(10,8))
 
-ggsave('visualisations/no_scaling_regional_mean_errors_boxplot_jitter.pdf', 
-       plot= plot.boxplot.jitter.errors, width=9, height=5, units='in')   
+ggsave("visualisations/no_scaling_regional_mean_errors_boxplot_jitter.pdf", 
+       plot= plot.boxplot.jitter.errors, width=9, height=5, units="in")   
 
 ```
 
 
 ```{r, visualising_both_estimators_different_respondents_same_data}
-spatial.results %>% filter(model=='negative_binomial')
+spatial.results %>% filter(model=="negative_binomial")
 spatial.results %>% 
 ggplot(aes(x=num_respondents, y=mean_error, 
-           color=sub('_', ' ', model) %>% str_to_title())) +
+           color=sub("_", " ", model) %>% str_to_title())) +
 geom_point(size=3) +
-labs(x='Number of respondents', 
-     y='Mean Absolute Relative Error',
-     color='Model') +
+labs(x="Number of respondents", 
+     y="Mean Absolute Relative Error",
+     color="Model") +
 expand_limits(x=0, y=0) +   
 scale_y_continuous(breaks = seq(0, 1.5, length.out=7), limits=c(0, 1.5)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
-theme(legend.position = 'bottom')
+theme(legend.position = "bottom")
 
 full.
 
@@ -147,20 +150,174 @@ summarise(mean_error = mean(mean_error))
 
 
 ggplot(aes(x=as.factor(num_respondents), y=mean_error, 
-           color=sub('_', ' ', model) %>% str_to_title())) +
+           color=sub("_", " ", model) %>% str_to_title())) +
 geom_boxplot() +
-labs(x='Number of respondents', 
-     y='Mean Absolute Relative Error',
-     color='Model') +
+labs(x="Number of respondents", 
+     y="Mean Absolute Relative Error",
+     color="Model") +
 expand_limits(x=0, y=0) +
 scale_y_continuous(breaks = seq(0, 2, length.out=9), 
                    limits=c(0, 2)) +
-geom_hline(yintercept=0, linetype='dashed', color='red') +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
 theme_bw() +
-theme(legend.position = 'bottom') 
+theme(legend.position = "bottom") 
 
-# write.csv(full.spatial.results, 'results/mu_rho_2.5_6.5_seeds.csv', row.names=F)
-# ggsave('visualisations/boxplot_mu_rho_2.5_6.5_seeds_427_41.pdf', width=7, height=8, units='in')
-# ggsave('visualisations/scatter_mu_rho_2.5_6.5_seeds_427_41.pdf', width=6, height=5, units='in')
+# write.csv(full.spatial.results, "results/mu_rho_2.5_6.5_seeds.csv", row.names=F)
+# ggsave("visualisations/boxplot_mu_rho_2.5_6.5_seeds_427_41.pdf", width=7, height=8, units="in")
+# ggsave("visualisations/scatter_mu_rho_2.5_6.5_seeds_427_41.pdf", width=6, height=5, units="in")
 ```
 
+
+
+```{r, comparsion_known_estimated}
+estimated.sizes <- import("results/Final Estimated Group Sizes Neg Binomial 5k w CI.xlsx") 
+
+estimated.real <- cbind(known.group.sizes %>% select(group_id, all_of(known.population.names)),
+                        estimated.sizes %>% select(group, contains(known.population.names) & !contains("%"))) %>% 
+                  select(!contains("group"))
+
+estimated.real %>% head
+
+for(group in colnames(estimated.real)[1:4]){ 
+  estimated.real[, paste0(group, "_relative_abs_error")] <- 
+  abs(estimated.real[, {{group}}] - estimated.real[, paste0("estimated_", {{group}})] ) /
+    estimated.real[, {{group}}]
+} 
+estimated.real %>% head
+
+relative.errors <- estimated.real %>% 
+select(contains("relative_abs_error")) %>% 
+mutate(region = row_number()) %>%
+pivot_longer(cols = -region, names_to = "group_name", 
+names_pattern = "(.+)_relative_abs_error", values_to = "error") %>%
+as.data.frame()
+
+
+relative.errors %>% head
+
+
+plot.prior.known.errors <- relative.errors %>%
+ggplot(aes(x = group_name, y = error, color=group_name)) +
+geom_violin() +
+geom_boxplot(width=0.1) +
+geom_hline(yintercept=0, linetype="dashed", color="red") +
+scale_y_continuous(breaks = seq(0, 7.25, 0.25)) +
+labs(x = "Known Group Name",
+     y = "Absolute Relative Error") +
+theme_bw() +
+theme(legend.position = "none")
+
+plot.prior.known.errors <- relative.errors %>%
+ggplot(aes(x = group_name, y = error, color=group_name)) +
+geom_violin() +
+geom_boxplot(width=0.1) +
+# geom_hline(yintercept=0, linetype="dashed", color="red") +
+scale_y_continuous(breaks = seq(0, 7.5, 0.5), limits=c(0, 7.5)) +
+labs(x = "Known Group Name",
+     y = "Absolute Relative Error") +
+theme_bw() +
+theme(legend.position = "none") +
+scale_color_brewer(palette = "Dark2") +
+coord_flip()
+
+ggsave("visualisations/known_group_size_errors.pdf", 
+      plot= plot.prior.known.errors, width=8, height=5, units="in")   
+
+known.group.sizes %>% 
+select(all_of(known.population.names)) %>% 
+mutate_all(~ . == 0) %>%
+colSums
+```
+
+- comparing the known and estimated group sizes
+- the absolute relative errors are mostly below 1
+- teachers is the anomalous group perhaps because the smallest number of regions 
+  had a count prior count available so the variation is due to sample size
+
+
+```{r, unknown_group_size_estimation}
+aoi <- st_read("data/AOI/current_municipalities.shp")
+unknown.group.sizes <- group.info %>% select(-group) %>% 
+  cbind(estimated.sizes %>% select(contains("perps"), contains("victims")) %>%
+  select(!contains("%")) )
+
+aoi.unknown.sizes <- aoi %>% mutate(idx = 1:nrow(.)) %>%  
+                  left_join(unknown.group.sizes)
+
+
+aoi[unknown.group.sizes$idx, "geometry"] %>% 
+cbind(unknown.group.sizes) %>% 
+ggplot() +
+geom_sf(aes(fill=estimated_combined_perps_2)) +
+scale_fill_gradient(low = "gold", high = "red") +
+theme_minimal() +
+labs(fill=" Number of Traffickers") +
+theme(legend.position = "bottom") 
+
+plot.traffickers <- aoi.unknown.sizes %>% 
+ggplot() +
+geom_sf(aes(fill=estimated_combined_perps_2)) +
+scale_fill_gradient(low = "gold", high = "red") +
+theme_void() +
+labs(fill=" Number of Traffickers") +
+theme(legend.position = "bottom",
+      legend.key.size = unit(0.8, "cm"),
+      legend.text = element_text(size = 10),
+      legend.title = element_text(size = 12)) +
+  ggspatial::annotation_scale(
+    location = "tr",
+    bar_cols = c("grey60", "white"),
+    text_family = "ArcherPro Book"
+  ) +
+  ggspatial::annotation_north_arrow(
+    location = "tr", which_north = "true",
+    pad_x = unit(1, "in"), pad_y = unit(1, "in"),
+    height = unit(3, "cm"),
+    width = unit(3, "cm"),
+    style = ggspatial::north_arrow_nautical(
+      fill = c("grey40", "white"),
+      line_col = "grey20",
+      text_family = "ArcherPro Book"
+    )
+)
+
+plot.victims <- aoi.unknown.sizes %>% 
+ggplot() +
+geom_sf(aes(fill=estimated_combined_victims_2)) +
+scale_fill_gradient(low = "gold", high = "red") +
+theme_void() +
+labs(fill=" Number of Victims") +
+theme(legend.position = "bottom",
+      legend.key.size = unit(0.8, "cm"),
+      legend.text = element_text(size = 10),
+      legend.title = element_text(size = 12)) +
+  ggspatial::annotation_scale(
+    location = "tr",
+    bar_cols = c("grey60", "white"),
+    text_family = "ArcherPro Book"
+  ) +
+  ggspatial::annotation_north_arrow(
+    location = "tr", which_north = "true",
+    pad_x = unit(1, "in"), pad_y = unit(1, "in"),
+    height = unit(3, "cm"),
+    width = unit(3, "cm"),
+    style = ggspatial::north_arrow_nautical(
+      fill = c("grey40", "white"),
+      line_col = "grey20",
+      text_family = "ArcherPro Book"
+    )
+)   
+plot.victims 
+
+plot.traffickers
+
+library(gridExtra)
+plot.traffickers.victims <- grid.arrange(plot.traffickers, plot.victims, ncol=1)
+plot.traffickers.victims
+
+# ggsave("visualisations/traffickers_estimation.pdf", 
+#       plot= plot.traffickers, width=6, height=8, units="in")
+
+# ggsave("visualisations/victims_estimation.pdf", 
+#       plot= plot.victims, width=5, height=8, units="in")
+```
