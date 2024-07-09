@@ -3,11 +3,11 @@ library(dplyr)
 library(rstan)
 library(stringr)
 library(rio)
-library(gridExtra)
+
+library(subnationalPrev)
 options(scipen=999)
 
 source('utils.r')
-model <- stan_model('inst/stan/neg_binomial_partial_pooling.stan')
 ```
 
 ```{r, generate_group_sizes}
@@ -64,15 +64,9 @@ for(region in 1:num.regions){
 }
 ard <- ard[-1,] 
 
-data <- list(N = nrow(ard),
-              K = ncol(ard),
-              y = ard,
-              J = num.regions, 
-              jj = rep(1:num.regions, each=num.respondents))
-
-fit <- sampling(model, data = data, warmup=200,
-        iter = 300, cores=20,
-        chains = 2, seed=920, verbose=F, show_messages=F)
+fit <- runSampling(ard=ard, grouping=rep(1:num.regions, each=num.respondents), 
+                      num.iterations=300, num.chains=2, seed=all.seeds920,
+                      show_messages=F, verbose=F)
 
 parameter.names <- dimnames(fit)$parameters
 
@@ -162,17 +156,9 @@ for(num.respondents in sim.num.respondents){
   }
   ard <- ard[-1,]
 
-
-  data <- list(N = nrow(ard),
-               K = ncol(ard),
-               y = ard,
-               offset = rep(population, nrow(ard)),
-               J = num.regions, 
-               jj = rep(1:num.regions, each=num.respondents))
-
-  fit <- sampling(model, data = data, warmup=750,
-          iter = 2000, cores=20,
-          chains = 2, seed=920, verbose=F, show_messages=F)
+  fit <- runSampling(ard=ard, grouping=rep(1:num.regions, each=num.respondents), 
+                      num.iterations=2000, warmup=750, num.chains=2, seed=720,
+                      show_messages=F, verbose=F)
 
   params <- extract(fit)
   rho_j <- params$rho_j
@@ -262,17 +248,9 @@ for(num.respondents in sim.num.respondents){
   }
   ard <- ard[-1,]
 
-
-  data <- list(N = nrow(ard),
-               K = ncol(ard),
-               y = ard,
-               offset = rep(population, nrow(ard)),
-               J = num.regions, 
-               jj = rep(1:num.regions, each=num.respondents))
-
-  fit <- sampling(model, data = data,
-          iter = 4000, cores=20,
-          chains = 2, seed=73, verbose=F, show_messages=F)
+  fit <- runSampling(ard=ard, grouping=rep(1:num.regions, each=num.respondents), 
+                      num.iterations=4000, num.chains=2, seed=73,
+                      show_messages=F, verbose=F)
 
   params <- extract(fit)
   rho_j <- params$rho_j

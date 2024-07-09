@@ -2,10 +2,15 @@
 library(dplyr)
 library(rstan)
 library(rio)
+
+library(subnationalPrev)
 options(scipen=999)
 
 source('utils.r')
-model <- stan_model('inst/stan/neg_binomial_partial_pooling.stan')
+
+# to have access to the results folder
+setwd("../../")
+
 
 mu.rho <- c(2.5, 3.5, 4.5, 5, 5.5, 6.5)
 w <- c(35, 35, 35, 35, 2, 0.3)
@@ -59,16 +64,11 @@ for(num.respondents in sim.num.respondents){
     ard <- rbind(ard, nb.ard)
   }
   ard <- ard[-1,]
-
-  data <- list(N = nrow(ard),
-               K = ncol(ard),
-               y = ard,
-               J = num.regions, 
-               jj = rep(1:num.regions, each=num.respondents))
-
-  fit <- sampling(model, data = data, warmup=200,
-          iter = 300, cores=parallel::detectCores(),
-          chains = 2, seed=all.seeds[3], verbose=F, show_messages=F)
+  
+  fit <- runSampling(ard=ard, grouping=rep(1:num.regions, each=num.respondents), 
+                      num.iterations=300, num.chains=2, seed=all.seeds[3],
+                      show_messages=F, verbose=F)
+                     
 
   params <- extract(fit)
   rho_j <- params$rho_j
